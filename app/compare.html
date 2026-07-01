@@ -5,6 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CLC 產品橫向對比</title>
     <link rel="stylesheet" href="https://terrielau2011-design.github.io/CLC-Business-System/assets/css/style.css">
+    <style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui, "Microsoft JhengHei", sans-serif;}
+.page-header {background:#2563eb;color:#fff;padding:18px 24px;margin-bottom:24px;}
+.page-header h1 {font-size:28px;margin-bottom:12px;}
+.nav-bar a {color:#fff;font-size:18px;margin-right:12px;text-decoration:none;}
+.nav-bar a.active {font-weight:bold;text-decoration:underline;}
+.container {max-width:1440px;margin:0 auto;padding:0 24px;}
+.load-block,.select-block,.result-block {margin-bottom:30px;}
+.btn-primary {background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:4px;font-size:16px;cursor:pointer;}
+.status-text {margin:10px 0;color:#333;font-size:16px;}
+.checkbox-wrap {margin:12px 0;}
+.checkbox-item {display:inline-block;margin:6px 10px;font-size:16px;}
+.ctrl-row {margin:16px 0;font-size:17px;}
+.compare-table {border-collapse:collapse;width:100%;margin:16px 0;}
+.compare-table th,.compare-table td {border:1px solid #ccc;padding:10px 14px;text-align:center;}
+.compare-table th {background:#f0f7ff;}
+.chart-wrap {margin-top:20px;height:400px;}
+h2 {font-size:24px;margin:16px 0;color:#111;}
+</style>
 </head>
 <body>
     <header class="page-header">
@@ -47,6 +66,7 @@
 
     <!-- 依賴模塊與圖表配置 -->
     <script src="https://terrielau2011-design.github.io/CLC-Business-System/modules/sync/sync.js"></script>
+    <script src="https://terrielau2011-design.github.io/CLC-Business-System/modules/compare/compare.js"></script>
     <script src="https://terrielau2011-design.github.io/CLC-Business-System/assets/charts/chartConfig.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
