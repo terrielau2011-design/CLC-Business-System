@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLC 保費融資槓桿試算</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <header class="page-header">
+        <h1>保費融資槓桿收益演算</h1>
+        <div class="nav-bar">
+            <a href="index.html">首頁</a>
+            <a href="compare.html">產品對比</a>
+            <a href="saving_plan.html">儲蓄規劃</a>
+            <a href="finance_leverage.html" class="active">融資槓桿</a>
+            <a href="report.html">報告匯出</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="load-block">
+            <button id="loadDataBtn" class="btn-primary">載入產品數據</button>
+            <p id="loadStatus" class="status-text">未載入數據</p>
+        </section>
+
+        <section class="calc-setting">
+            <div class="form-row">
+                <label>融資產品（僅支援融資產品可選）：
+                    <select id="prodSelect">
+                        <option value="">請先載入數據</option>
+                    </select>
+                </label>
+            </div>
+            <div class="form-row">
+                <label>計算幣種：
+                    <select id="currencySelect">
+                        <option value="USD">USD 美元</option>
+                    </select>
+                </label>
+            </div>
+            <div class="form-row">
+                <label>模擬貸款年利率(%)：
+                    <input type="number" id="loanRate" value="3.2" step="0.1" min="1" max="8">
+                </label>
+            </div>
+            <div class="form-row">
+                <label>持有年期：
+                    <select id="holdYear">
+                        <option value="15">15 年</option>
+                        <option value="20" selected>20 年</option>
+                    </select>
+                </label>
+            </div>
+            <button id="runFinCalcBtn" class="btn-primary">執行融資槓桿演算</button>
+        </section>
+
+        <section class="result-card" id="finResultWrap"></section>
+        <section class="chart-wrap" id="finChartWrap"></section>
+    </main>
+
+    <!-- 依賴模塊與圖表 -->
+    <script src="../modules/sync/sync.js"></script>
+    <script src="../modules/saving_calc/saving_calc.js"></script>
+    <script src="../modules/finance_calc/finance_calc.js"></script>
+    <script src="../assets/charts/finConfig.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const loadBtn = document.getElementById("loadDataBtn");
+        const statusText = document.getElementById("loadStatus");
+        const prodSelect = document.getElementById("prodSelect");
+        const currencySelect = document.getElementById("currencySelect");
+        const loanRateInput = document.getElementById("loanRate");
+        const holdYearSelect = document.getElementById("holdYear");
+        const runFinCalcBtn = document.getElementById("runFinCalcBtn");
+        const finResultWrap = document.getElementById("finResultWrap");
+        const finChartWrap = document.getElementById("finChartWrap");
+        let allProducts = [];
+        let finChart = null;
+
+        // 載入產品數據
+        loadBtn.addEventListener("click", async () => {
+            statusText.textContent = "載入遠端產品數據中...";
+            const data = await DataSync.loadAllData();
+            if (!data) {
+                statusText.textContent = "數據載入失敗，請檢查網絡";
+                return;
+            }
+            allProducts = data.products;
+            await FinanceCalc.initData();
+            statusText.textContent = `載入${allProducts.length}款產品，僅顯示支援融資產品`;
+            renderFinanceProductOption();
+        });
+
+        // 只渲染支援融資的產品下拉選單
+        function renderFinanceProductOption() {
+            prodSelect.innerHTML = `<option value="">請選擇融資產品</option>`;
+            const finProducts = allProducts.filter(p => p.finance_support === true);
+            finProducts.forEach(p => {
+                const opt = document.createElement("option");
+                opt.value = p.prod_id;
+                opt.textContent = `${p.prod_id} - ${p.prod_name}`;
+                prodSelect.appendChild(opt);
+            });
+            if (finProducts.length === 0) {
+                statusText.textContent = "暫無支援保費融資的產品";
+            }
+        }
+
+        // 執行融資演算
+        runFinCalcBtn.addEventListener("click", () => {
+            const prodId = prodSelect.value;
+            const currency = currencySelect.value;
+            const loanRate = Number(loanRateInput.value);
+            const holdYear = Number(holdYearSelect.value);
+
+            if (!prodId) {
+                alert("請選擇一款支援融資的產品");
+                return;
+            }
+            const product = FinanceCalc.getProductById(prodId);
+            if (!product) return;
+
+            // 核心融資計算數據
+            const finData = FinanceCalc.calcFinanceLeverage(product, currency, loanRate, holdYear);
+            const chartData = FinanceCalc.buildFinChartData(product, currency, loanRate);
+            const isShortBreak = FinanceCalc.isShortSavingBreak(product);
+            const isEduRule = FinanceCalc.checkEducationFundRule(product, currency);
+            const maxT = FinanceCalc.getMaxPayTerm(product);
+
+            // 渲染文字結果
+            finResultWrap.innerHTML = `
+                <h2>${product.prod_name}｜融資槓桿試算結果</h2>
+                <div class="grid-row">
+                    <div class="grid-col">
+                        <h4>基礎參數</h4>
+                        <p>幣種：${currency}</p>
+                        <p>繳費年期：${maxT}年</p>
+                        <p>原始總保費：${currency}${finData.totalOriginalPrem}</p>
+                        <p>貸款金額(70%)：${currency}${finData.loanAmount}</p>
+                        <p>客戶自付金額(30%)：${currency}${finData.selfPay}</p>
+                        <p>模擬貸款總利息：${currency}${finData.totalInterest}</p>
+                    </div>
+                    <div class="grid-col">
+                        <h4>槓桿收益預估（持有${holdYear}年）</h4>
+                        <p>保單期末總價值：${currency}${finData.assetFinal}</p>
+                        <p>扣除貸款後淨資產：${currency}${finData.netAsset}</p>
+                        <p>模擬淨ROI：${finData.netROI}%</p>
+                        <h4>產品標籤規則校驗</h4>
+                        <p>T+2短期回本：${isShortBreak ? "✅ 符合" : "❌ 不符合"}</p>
+                        <p>T+10教育基金門檻：${isEduRule ? "✅ 達標" : "❌ 未達標"}</p>
+                    </div>
+                </div>
+            `;
+            // 渲染雙極限曲線圖
+            renderFinChart(chartData);
+        });
+
+        // 融資雙線圖渲染
+        function renderFinChart(data) {
+            finChartWrap.innerHTML = `<canvas id="finChartCanvas"></canvas>`;
+            const ctx = document.getElementById("finChartCanvas").getContext("2d");
+            if (finChart) finChart.destroy();
+            finChart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: data.years,
+                    datasets: [
+                        {
+                            label: "基準收益曲線",
+                            data: data.baseSeries,
+                            borderColor: finConfig.baseLine,
+                            fill: false,
+                            tension: 0.2
+                        },
+                        {
+                            label: "壓測下行曲線",
+                            data: data.stressSeries,
+                            borderColor: finConfig.stressLine,
+                            fill: false,
+                            tension: 0.2
+                        }
+                    ]
+                },
+                options: finConfig.baseOption
+            });
+        }
+    </script>
+</body>
+</html>
