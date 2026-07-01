@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLC 儲蓄險規劃試算</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <header class="page-header">
+        <h1>儲蓄險個人規劃試算</h1>
+        <div class="nav-bar">
+            <a href="index.html">首頁</a>
+            <a href="compare.html">產品對比</a>
+            <a href="saving_plan.html" class="active">儲蓄規劃</a>
+            <a href="finance_leverage.html">融資槓桿</a>
+            <a href="report.html">報告匯出</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="load-block">
+            <button id="loadDataBtn" class="btn-primary">載入產品數據</button>
+            <p id="loadStatus" class="status-text">未載入數據</p>
+        </section>
+
+        <section class="calc-setting">
+            <div class="form-row">
+                <label>選擇產品：
+                    <select id="prodSelect">
+                        <option value="">請先載入數據</option>
+                    </select>
+                </label>
+            </div>
+            <div class="form-row">
+                <label>計算幣種：
+                    <select id="currencySelect">
+                        <option value="USD">USD 美元</option>
+                        <option value="HKD">HKD 港幣</option>
+                        <option value="CNY">CNY 人民幣</option>
+                    </select>
+                </label>
+            </div>
+            <button id="runCalcBtn" class="btn-primary">執行規劃試算</button>
+        </section>
+
+        <section class="result-card" id="resultWrap"></section>
+    </main>
+
+    <!-- 依賴模塊 -->
+    <script src="../modules/sync/sync.js"></script>
+    <script src="../modules/compare/compare.js"></script>
+    <script src="../modules/saving_calc/saving_calc.js"></script>
+    <script>
+        const loadBtn = document.getElementById("loadDataBtn");
+        const statusText = document.getElementById("loadStatus");
+        const prodSelect = document.getElementById("prodSelect");
+        const currencySelect = document.getElementById("currencySelect");
+        const runCalcBtn = document.getElementById("runCalcBtn");
+        const resultWrap = document.getElementById("resultWrap");
+        let allProducts = [];
+
+        // 載入遠端產品數據
+        loadBtn.addEventListener("click", async () => {
+            statusText.textContent = "載入數據中...";
+            const data = await DataSync.loadAllData();
+            if (!data) {
+                statusText.textContent = "數據載入失敗，請檢查網絡";
+                return;
+            }
+            allProducts = data.products;
+            await SavingCalc.initData();
+            statusText.textContent = `成功載入${allProducts.length}款產品`;
+            renderProductOption();
+        });
+
+        // 渲染產品下拉選單
+        function renderProductOption() {
+            prodSelect.innerHTML = `<option value="">請選擇產品</option>`;
+            allProducts.forEach(p => {
+                const opt = document.createElement("option");
+                opt.value = p.prod_id;
+                opt.textContent = `${p.prod_id} - ${p.prod_name}`;
+                prodSelect.appendChild(opt);
+            });
+        }
+
+        // 執行試算
+        runCalcBtn.addEventListener("click", () => {
+            const prodId = prodSelect.value;
+            const currency = currencySelect.value;
+            if (!prodId) {
+                alert("請選擇一款產品");
+                return;
+            }
+            const product = SavingCalc.getProductById(prodId);
+            if (!product) return;
+
+            // 提取計算數據
+            const minPrem = SavingCalc.getMinPremByCurrency(product, currency);
+            const totalPrem = SavingCalc.calcTotalOriginalPrem(product, currency);
+            const corePoints = SavingCalc.getCorePoints(product);
+            const sceneText = SavingCalc.getSceneDesc(product);
+            const maxT = Math.max(...product.pay_term);
+            const hasFin = SavingCalc.hasFinanceSupport(product);
+            const bench15 = SavingCalc.calcAssetBenchmark(totalPrem, product.irr_15, 15);
+            const bench20 = SavingCalc.calcAssetBenchmark(totalPrem, product.irr_20, 20);
+
+            // 渲染結果卡片
+            resultWrap.innerHTML = `
+                <h2>${product.prod_name}</h2>
+                <p class="sub-title">承保公司：${product.ins_name}</p>
+                <div class="grid-row">
+                    <div class="grid-col">
+                        <h4>基礎規劃參數</h4>
+                        <p>選定幣種：${currency}</p>
+                        <p>每年最低保費：${currency}${minPrem}</p>
+                        <p>最長繳費年期：${maxT}年</p>
+                        <p>全期原始總保費：${currency}${totalPrem}</p>
+                        <p>回本週年：${product.break_year ?? "無短期回本點"}</p>
+                        <p>15年模擬期末資產：${currency}${bench15.finalValue}</p>
+                        <p>20年模擬期末資產：${currency}${bench20.finalValue}</p>
+                        <p>支援保費融資：${hasFin ? "✅ 支援" : "❌ 不支援"}</p>
+                    </div>
+                    <div class="grid-col">
+                        <h4>產品核心賣點</h4>
+                        <ul>${corePoints.map(item => `<li>${item}</li>`).join("")}</ul>
+                        <h4>適合場景</h4>
+                        <p>${sceneText}</p>
+                    </div>
+                </div>
+                ${hasFin ? `<p class="tip-text">此產品支援保費融資，可前往「融資槓桿」頁面試算槓桿收益</p>` : ""}
+            `;
+        });
+    </script>
+</body>
+</html>
