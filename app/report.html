@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLC 產品規劃報告匯出</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <header class="page-header">
+        <h1>產品完整規劃報告生成器</h1>
+        <div class="nav-bar">
+            <a href="index.html">首頁</a>
+            <a href="compare.html">產品對比</a>
+            <a href="saving_plan.html">儲蓄規劃</a>
+            <a href="finance_leverage.html">融資槓桿</a>
+            <a href="report.html" class="active">報告匯出</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="load-block">
+            <button id="loadDataBtn" class="btn-primary">載入產品數據</button>
+            <p id="loadStatus" class="status-text">未載入數據</p>
+        </section>
+
+        <section class="report-setting">
+            <div class="form-row">
+                <label>選擇產品：
+                    <select id="prodSelect">
+                        <option value="">請先載入數據</option>
+                    </select>
+                </label>
+            </div>
+            <div class="form-row">
+                <label>計算幣種：
+                    <select id="currencySelect">
+                        <option value="USD">USD 美元</option>
+                        <option value="HKD">HKD 港幣</option>
+                        <option value="CNY">CNY 人民幣</option>
+                    </select>
+                </label>
+            </div>
+            <div class="form-row">
+                <label>模擬貸款利率(%)：
+                    <input type="number" id="loanRate" value="3.2" step="0.1" min="1" max="8">
+                </label>
+            </div>
+            <div class="form-row">
+                <label>持有年期：
+                    <select id="holdYear">
+                        <option value="15">15 年</option>
+                        <option value="20" selected>20 年</option>
+                    </select>
+                </label>
+            </div>
+            <button id="genReportBtn" class="btn-primary">生成完整報告</button>
+            <button id="copyWhatsAppBtn" class="btn-secondary">複製WhatsApp分享文案</button>
+        </section>
+
+        <section class="report-card" id="reportWrap"></section>
+        <section class="chart-wrap" id="reportChartWrap"></section>
+    </main>
+
+    <!-- 全域依賴模塊 -->
+    <script src="../modules/sync/sync.js"></script>
+    <script src="../modules/compare/compare.js"></script>
+    <script src="../modules/saving_calc/saving_calc.js"></script>
+    <script src="../modules/finance_calc/finance_calc.js"></script>
+    <script src="../modules/report_pdf/report_pdf.js"></script>
+    <script src="../assets/charts/finConfig.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const loadBtn = document.getElementById("loadDataBtn");
+        const statusText = document.getElementById("loadStatus");
+        const prodSelect = document.getElementById("prodSelect");
+        const currencySelect = document.getElementById("currencySelect");
+        const loanRateInput = document.getElementById("loanRate");
+        const holdYearSelect = document.getElementById("holdYear");
+        const genReportBtn = document.getElementById("genReportBtn");
+        const copyWhatsAppBtn = document.getElementById("copyWhatsAppBtn");
+        const reportWrap = document.getElementById("reportWrap");
+        const chartWrap = document.getElementById("reportChartWrap");
+        let allProducts = [];
+        let currentWhatsText = "";
+        let reportChart = null;
+
+        // 載入產品數據
+        loadBtn.addEventListener("click", async () => {
+            statusText.textContent = "載入遠端產品數據中...";
+            const data = await DataSync.loadAllData();
+            if (!data) {
+                statusText.textContent = "數據載入失敗，請檢查網絡與倉庫檔案";
+                return;
+            }
+            allProducts = data.products;
+            await SavingCalc.initData();
+            await FinanceCalc.initData();
+            statusText.textContent = `載入${allProducts.length}款產品，可生成對應報告`;
+            renderProductOption();
+        });
+
+        // 渲染全部產品下拉選單
+        function renderProductOption() {
+            prodSelect.innerHTML = `<option value="">請選擇產品</option>`;
+            allProducts.forEach(p => {
+                const opt = document.createElement("option");
+                opt.value = p.prod_id;
+                opt.textContent = `${p.prod_id} - ${p.prod_name}`;
+                prodSelect.appendChild(opt);
+            });
+        }
+
+        // 生成完整報告內容
+        genReportBtn.addEventListener("click", async () => {
+            const prodId = prodSelect.value;
+            const currency = currencySelect.value;
+            const loanRate = Number(loanRateInput.value);
+            const holdYear = Number(holdYearSelect.value);
+            if (!prodId) {
+                alert("請先選擇一款產品");
+                return;
+            }
+            // 調用報告模塊生成完整數據
+            const reportData = await ReportPDF.buildFullReport(prodId, currency, loanRate, holdYear);
+            if (!reportData) {
+                reportWrap.innerHTML = "<p class="error-text">報告生成失敗，產品數據異常</p>";
+                return;
+            }
+            // 儲存WhatsApp分享文案
+            currentWhatsText = await ReportPDF.buildWhatsAppText(prodId, currency);
+            // 渲染報告文字內容
+            renderReportHtml(reportData, currency);
+            // 渲染融資曲線圖
+            renderReportChart(reportData.chart);
+        });
+
+        // 複製WhatsApp文案到剪貼簿
+        copyWhatsAppBtn.addEventListener("click", async () => {
+            if (!currentWhatsText) {
+                alert("請先生成報告後再複製分享文案");
+                return;
+            }
+            const copyResult = await ReportPDF.copyToClipboard(currentWhatsText);
+            if (copyResult) {
+                alert("WhatsApp分享文案已複製到剪貼簿！");
+            } else {
+                alert("複製失敗，請手動複製報告內文字");
+            }
+        });
+
+        // 渲染報告HTML結構
+        function renderReportHtml(data, currency) {
+            const basic = data.basic;
+            const points = data.sellingPoints.map(p => `<li>${p}</li>`).join("");
+            let finHtml = "";
+            if (data.finance) {
+                finHtml = `
+                <div class="report-block">
+                    <h3>融資槓桿模擬結果</h3>
+                    <p>原始總保費：${currency}${data.finance.totalOriginalPrem}</p>
+                    <p>自付金額：${currency}${data.finance.selfPay}</p>
+                    <p>期末保單價值：${currency}${data.finance.assetFinal}</p>
+                    <p>扣除貸款淨資產：${currency}${data.finance.netAsset}</p>
+                    <p>模擬淨回報率：${data.finance.netROI}%</p>
+                </div>`;
+            }
+            reportWrap.innerHTML = `
+                <div class="report-block">
+                    <h2>${basic.prodName}｜完整財務規劃報告</h2>
+                    <div class="grid-row">
+                        <div class="grid-col">
+                            <h3>產品基礎資訊</h3>
+                            <p>承保公司：${basic.insName}</p>
+                            <p>支援幣種：${basic.currencyList.join("/")}</p>
+                            <p>繳費年期：${basic.payTermList.join("/")}</p>
+                            <p>全期原始總保費：${currency}${basic.totalOriginalPrem}</p>
+                            <p>15週年IRR：${basic.irr15}</p>
+                            <p>20週年IRR：${basic.irr20}</p>
+                            <p>回本週年：${basic.breakYear}</p>
+                            <p>收益屬性：${basic.guarantee}</p>
+                            <p>受保人轉換：${basic.transferAssured}</p>
+                            <p>年度分紅提取：${basic.annualWithdraw}</p>
+                        </div>
+                        <div class="grid-col">
+                            <h3>核心競爭賣點</h3>
+                            <ul>${points}</ul>
+                            <h3>適合客戶場景</h3>
+                            <p>${data.sceneDesc}</p>
+                            <h3>產品標籤判定</h3>
+                            <p>T+2短期回本：${data.tagMark.isShortSaving ? "✅ 符合" : "❌ 不符合"}</p>
+                            <p>T+10教育基金門檻：${data.tagMark.isEduFund ? "✅ 達標" : "❌ 未達標"}</p>
+                        </div>
+                    </div>
+                    ${finHtml}
+                </div>
+            `;
+        }
+
+        // 渲染報告頁曲線圖
+        function renderReportChart(chartData) {
+            chartWrap.innerHTML = `<canvas id="reportChartCanvas"></canvas>`;
+            const ctx = document.getElementById("reportChartCanvas").getContext("2d");
+            if (reportChart) reportChart.destroy();
+            reportChart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: chartData.years,
+                    datasets: [
+                        {label:"基準收益", data:chartData.baseSeries, borderColor:finConfig.baseLine, fill:false},
+                        {label:"壓測下行", data:chartData.stressSeries, borderColor:finConfig.stressLine, fill:false}
+                    ]
+                },
+                options: finConfig.baseOption
+            });
+        }
+    </script>
+</body>
+</html>
