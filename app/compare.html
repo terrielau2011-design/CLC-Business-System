@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLC 產品橫向對比</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <header class="page-header">
+        <h1>產品橫向對比工具</h1>
+        <div class="nav-bar">
+            <a href="index.html">首頁</a>
+            <a href="compare.html" class="active">產品對比</a>
+            <a href="saving_plan.html">儲蓄規劃</a>
+            <a href="finance_leverage.html">融資槓桿</a>
+            <a href="report.html">報告匯出</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="load-block">
+            <button id="loadDataBtn" class="btn-primary">載入產品數據</button>
+            <p id="loadStatus" class="status-text">未載入數據</p>
+        </section>
+
+        <section class="select-block">
+            <h2>選擇2-4款產品對比</h2>
+            <div id="prodSelectWrap" class="checkbox-wrap"></div>
+            <div class="ctrl-row">
+                <label>對比週年：
+                    <select id="yearSelect">
+                        <option value="15">15週年 IRR</option>
+                        <option value="20" selected>20週年 IRR</option>
+                    </select>
+                </label>
+                <button id="runCompareBtn" class="btn-primary">執行對比</button>
+            </div>
+        </section>
+
+        <section class="result-block">
+            <h2>對比表格</h2>
+            <div id="compareTableWrap"></div>
+            <div class="chart-wrap" id="compareChartWrap"></div>
+        </section>
+    </main>
+
+    <!-- 依賴模塊與圖表配置 -->
+    <script src="../modules/sync/sync.js"></script>
+    <script src="../modules/compare/compare.js"></script>
+    <script src="../assets/charts/chartConfig.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const loadBtn = document.getElementById("loadDataBtn");
+        const statusText = document.getElementById("loadStatus");
+        const prodSelectWrap = document.getElementById("prodSelectWrap");
+        const yearSelect = document.getElementById("yearSelect");
+        const runCompareBtn = document.getElementById("runCompareBtn");
+        const tableWrap = document.getElementById("compareTableWrap");
+        const chartWrap = document.getElementById("compareChartWrap");
+        let allProductList = [];
+        let compareChart = null;
+
+        // 載入數據
+        loadBtn.addEventListener("click", async () => {
+            statusText.textContent = "載入數據中...";
+            const data = await DataSync.loadAllData();
+            if (!data) {
+                statusText.textContent = "數據載入失敗";
+                return;
+            }
+            allProductList = data.products;
+            await ProductCompare.initData();
+            statusText.textContent = `載入${allProductList.length}款產品，請勾選對比產品`;
+            renderProductCheckboxes();
+        });
+
+        // 渲染產品勾選框
+        function renderProductCheckboxes() {
+            prodSelectWrap.innerHTML = "";
+            allProductList.forEach(p => {
+                const label = document.createElement("label");
+                label.className = "checkbox-item";
+                label.innerHTML = `
+                    <input type="checkbox" value="${p.prod_id}" class="prod-checkbox">
+                    ${p.prod_name}
+                `;
+                prodSelectWrap.appendChild(label);
+            });
+        }
+
+        // 執行對比
+        runCompareBtn.addEventListener("click", () => {
+            const checkedInputs = document.querySelectorAll(".prod-checkbox:checked");
+            const selectedIds = Array.from(checkedInputs).map(el => el.value);
+            if (selectedIds.length < 2 || selectedIds.length > 4) {
+                alert("請勾選2至4款產品進行對比");
+                return;
+            }
+            const targetYear = Number(yearSelect.value);
+            const selectedProds = allProductList.filter(p => selectedIds.includes(p.prod_id));
+            renderCompareTable(selectedProds, targetYear);
+            renderCompareChart(selectedProds, targetYear);
+        });
+
+        // 渲染對比表格
+        function renderCompareTable(prods, year) {
+            tableWrap.innerHTML = "";
+            const table = document.createElement("table");
+            table.className = "compare-table";
+            // 表頭
+            const thead = document.createElement("thead");
+            let headHtml = `<tr><th>項目</th>`;
+            prods.forEach(p => headHtml += `<th>${p.prod_name}</th>`);
+            headHtml += `</tr>`;
+            thead.innerHTML = headHtml;
+            table.appendChild(thead);
+            // 表格內容
+            const tbody = document.createElement("tbody");
+            const rowData = [
+                {name:"承保公司", fn:p=>p.ins_name},
+                {name:"繳費年期", fn:p=>p.pay_term.join("/")},
+                {name:"入場門檻", fn:p=>ProductCompare.getMinPremText(p)},
+                {name:"15年IRR", fn:p=>p.irr_15??"-"},
+                {name:"20年IRR", fn:p=>p.irr_20??"-"},
+                {name:"回本週年", fn:p=>p.break_year??"無"},
+                {name:"是否可轉受保人", fn:p=>p.transfer_life_assured?"是":"否"},
+                {name:"可每年提取分紅", fn:p=>p.annual_div_withdraw?"是":"否"},
+                {name:"支援保費融資", fn:p=>p.finance_support?"是":"否"}
+            ];
+            rowData.forEach(row=>{
+                let trHtml = `<tr><td>${row.name}</td>`;
+                prods.forEach(p=>trHtml += `<td>${row.fn(p)}</td>`);
+                trHtml += `</tr>`;
+                tbody.innerHTML += trHtml;
+            });
+            table.appendChild(tbody);
+            tableWrap.appendChild(table);
+        }
+
+        // 渲染IRR對比圖表
+        function renderCompareChart(prods, year) {
+            chartWrap.innerHTML = `<canvas id="irrChartCanvas"></canvas>`;
+            const ctx = document.getElementById("irrChartCanvas").getContext("2d");
+            const chartData = ProductCompare.buildChartData(prods, year);
+            if (compareChart) compareChart.destroy();
+            compareChart = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: `${year}週年IRR(%)`,
+                        data: chartData.irrData,
+                        backgroundColor: chartConfig.barColor
+                    }]
+                },
+                options: chartConfig.baseOption
+            });
+        }
+    </script>
+</body>
+</html>
