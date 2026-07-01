@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLC 財務規劃系統｜首頁</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <header class="page-header">
+        <h1>CLC-Business-System 產品規劃平台</h1>
+        <div class="nav-bar">
+            <a href="index.html" class="active">首頁</a>
+            <a href="compare.html">產品對比</a>
+            <a href="saving_plan.html">儲蓄規劃</a>
+            <a href="finance_leverage.html">融資槓桿</a>
+            <a href="report.html">報告匯出</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="load-block">
+            <button id="loadDataBtn" class="btn-primary">載入產品數據</button>
+            <button id="clearCacheBtn" class="btn-secondary">清除本地緩存</button>
+            <p id="loadStatus" class="status-text">未載入數據</p>
+        </section>
+
+        <section class="tag-filter-block">
+            <h2>產品標籤分類</h2>
+            <div id="tagListWrap" class="tag-wrap"></div>
+        </section>
+
+        <section class="product-card-wrap" id="productWrap"></section>
+    </main>
+
+    <!-- 底層依賴模塊 -->
+    <script src="../modules/sync/sync.js"></script>
+    <script src="../modules/compare/compare.js"></script>
+    <script>
+        const loadBtn = document.getElementById("loadDataBtn");
+        const clearBtn = document.getElementById("clearCacheBtn");
+        const statusText = document.getElementById("loadStatus");
+        const tagWrap = document.getElementById("tagListWrap");
+        const productWrap = document.getElementById("productWrap");
+
+        // 載入數據按鈕
+        loadBtn.addEventListener("click", async () => {
+            statusText.textContent = "正在拉取遠端產品數據...";
+            const data = await DataSync.loadAllData();
+            if (!data) {
+                statusText.textContent = "數據載入失敗，請檢查網絡或倉庫檔案";
+                return;
+            }
+            statusText.textContent = `載入成功，共${data.products.length}款產品`;
+            await ProductCompare.initData();
+            renderAllTags();
+            renderAllProducts(data.products);
+        });
+
+        // 清除緩存按鈕
+        clearBtn.addEventListener("click", () => {
+            DataSync.clearCache();
+            statusText.textContent = "本地緩存已清空，請重新載入數據";
+            tagWrap.innerHTML = "";
+            productWrap.innerHTML = "";
+        });
+
+        // 渲染全部標籤按鈕
+        function renderAllTags() {
+            const allTags = ProductCompare.getAllTagList();
+            tagWrap.innerHTML = "";
+            allTags.forEach(tag => {
+                const tagBtn = document.createElement("button");
+                tagBtn.className = "tag-btn";
+                tagBtn.textContent = tag;
+                tagBtn.onclick = () => filterProductByTag(tag);
+                tagWrap.appendChild(tagBtn);
+            });
+        }
+
+        // 渲染全部產品卡片
+        function renderAllProducts(productList) {
+            productWrap.innerHTML = "";
+            productList.forEach(p => {
+                const allTags = ProductCompare.getAllTags(p);
+                const card = document.createElement("div");
+                card.className = "product-card";
+                card.innerHTML = `
+                    <h3>${p.prod_name}</h3>
+                    <p>承保公司：${p.ins_name}</p>
+                    <p>入場門檻：${ProductCompare.getMinPremText(p)}</p>
+                    <p>IRR15：${p.irr_15 ?? "無"}｜IRR20：${p.irr_20 ?? "無"}</p>
+                    <p>回本週年：${p.break_year ?? "無"}</p>
+                    <div class="tag-small">${allTags.join("、")}</div>
+                    <div class="card-btn-group">
+                        <a href="saving_plan.html?id=${p.prod_id}" class="btn-sm">規劃試算</a>
+                        <a href="report.html?id=${p.prod_id}" class="btn-sm">生成報告</a>
+                    </div>
+                `;
+                productWrap.appendChild(card);
+            });
+        }
+
+        // 標籤篩選產品
+        function filterProductByTag(tagName) {
+            const filterList = ProductCompare.filterByTag(tagName);
+            renderAllProducts(filterList);
+        }
+    </script>
+</body>
+</html>
