@@ -1,0 +1,46 @@
+[
+  {
+    "tag_name": "整付入場",
+    "filter_logic": "item.pay_term.includes(0)"
+  },
+  {
+    "tag_name": "分期入場",
+    "filter_logic": "item.pay_term.some(t => t > 0)"
+  },
+  {
+    "tag_name": "槓桿融資",
+    "filter_logic": "item.finance_support === true"
+  },
+  {
+    "tag_name": "小額入場",
+    "filter_logic": "item.min_prem_currency.USD < 20000"
+  },
+  {
+    "tag_name": "高淨值資產配置",
+    "filter_logic": "item.min_prem_currency.USD >= 100000 && item.finance_support === true"
+  },
+  {
+    "tag_name": "穩定收益",
+    "filter_logic": "item.guarantee === true"
+  },
+  {
+    "tag_name": "短期儲蓄",
+    "filter_logic": "item.break_year !== null && Math.max(...item.pay_term) + 2 === item.break_year"
+  },
+  {
+    "tag_name": "資產傳承",
+    "filter_logic": "item.transfer_life_assured === true"
+  },
+  {
+    "tag_name": "退休規劃",
+    "filter_logic": "item.annual_div_withdraw === true"
+  },
+  {
+    "tag_name": "跨境財富規劃",
+    "filter_logic": "item.currency.length >= 3"
+  },
+  {
+    "tag_name": "教育基金",
+    "filter_logic": "item.break_year !== null && Math.max(...item.pay_term) + 10 && item.value_t_plus_10 >= item.total_original_prem * 1.8"
+  }
+]
