@@ -7,22 +7,38 @@
     <link rel="stylesheet" href="https://terrielau2011-design.github.io/CLC-Business-System/assets/css/style.css">
     <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui, "Microsoft JhengHei", sans-serif;}
-.page-header {background:#2563eb;color:#fff;padding:18px 24px;margin-bottom:24px;}
-.page-header h1 {font-size:28px;margin-bottom:12px;}
-.nav-bar a {color:#fff;font-size:18px;margin-right:12px;text-decoration:none;}
-.nav-bar a.active {font-weight:bold;text-decoration:underline;}
-.container {max-width:1440px;margin:0 auto;padding:0 24px;}
-.load-block,.select-block,.result-block {margin-bottom:30px;}
-.btn-primary {background:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:4px;font-size:16px;cursor:pointer;}
-.status-text {margin:10px 0;color:#333;font-size:16px;}
-.checkbox-wrap {margin:12px 0;}
-.checkbox-item {display:inline-block;margin:6px 10px;font-size:16px;}
-.ctrl-row {margin:16px 0;font-size:17px;}
-.compare-table {border-collapse:collapse;width:100%;margin:16px 0;}
-.compare-table th,.compare-table td {border:1px solid #ccc;padding:10px 14px;text-align:center;}
-.compare-table th {background:#f0f7ff;}
-.chart-wrap {margin-top:20px;height:400px;}
-h2 {font-size:24px;margin:16px 0;color:#111;}
+body{background:#f6f8fa;}
+.page-header {background:#2563eb;color:#fff;padding:20px 32px;margin-bottom:28px;box-shadow:0 2px 8px rgba(0,0,0,0.12);}
+.page-header h1 {font-size:30px;margin-bottom:14px;}
+.nav-bar a {color:#fff;font-size:19px;margin-right:14px;text-decoration:none;opacity:0.9;}
+.nav-bar a.active {font-weight:bold;text-decoration:underline;opacity:1;}
+.container {max-width:1480px;margin:0 auto;padding:0 32px;}
+/* 卡片面板樣式（還原舊系統陰影分區） */
+.panel {background:#fff;border-radius:10px;box-shadow:0 1px 12px rgba(0,0,0,0.06);padding:24px;margin-bottom:24px;}
+.panel h2,.panel h3 {color:#1a1a1a;margin-bottom:16px;border-left:4px solid #2563eb;padding-left:12px;}
+/* 按鈕美化 */
+.btn-primary {background:#2563eb;color:#fff;border:none;padding:9px 18px;border-radius:6px;font-size:16px;cursor:pointer;box-shadow:0 2px 6px rgba(37, 99, 235, 0.25);transition:background 0.2s;}
+.btn-primary:hover {background:#1d4ed8;}
+/* 產品分類標籤badge */
+.tag-wrap {margin:12px 0;}
+.badge {display:inline-block;background:#e0eaff;color:#1d4ed8;padding:4px 10px;border-radius:20px;font-size:14px;margin:4px 6px 4px 0;}
+/* 兩欄資訊網格 */
+.grid-two {display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0;}
+.data-row {display:flex;margin:8px 0;}
+.data-row .label {width:140px;color:#555;font-weight:500;}
+/* 對比表格美化 */
+.compare-table {border-collapse:collapse;width:100%;margin:20px 0;border-radius:8px;overflow:hidden;box-shadow:0 1px 8px rgba(0,0,0,0.05);}
+.compare-table th,.compare-table td {border:1px solid #e5e7eb;padding:12px 16px;text-align:center;background:#fff;}
+.compare-table th {background:#eff6ff;color:#1d4ed8;font-weight:500;}
+/* 勾選框區塊白色卡片 */
+.checkbox-wrap {margin:16px 0;padding:16px;background:#fff;border-radius:8px;box-shadow:0 1px 6px rgba(0,0,0,0.04);}
+.checkbox-item {display:inline-block;margin:8px 12px;font-size:16px;}
+/* 圖表容器卡片 */
+.chart-wrap {margin-top:24px;height:420px;background:#fff;padding:20px;border-radius:10px;box-shadow:0 1px 10px rgba(0,0,0,0.05);}
+h2 {font-size:26px;margin:20px 0;color:#111;}
+.ctrl-row {margin:18px 0;font-size:18px;display:flex;align-items:center;gap:12px;}
+select {padding:6px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:16px;}
+input[type="text"] {padding:6px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:16px;}
 </style>
 </head>
 <body>
