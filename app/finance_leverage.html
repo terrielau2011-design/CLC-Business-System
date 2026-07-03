@@ -20,7 +20,6 @@ body{background:#f6f8fa;}
 .btn-primary {background:#2563eb;color:#fff;border:none;padding:9px 18px;border-radius:6px;font-size:16px;cursor:pointer;box-shadow:0 2px 6px rgba(37, 99, 235, 0.25);transition:background 0.2s;}
 .btn-primary:hover {background:#1d4ed8;}
 /* 產品分類標籤badge */
-.tag-wrap {margin:12px 0;}
 .badge {display:inline-block;background:#e0eaff;color:#1d4ed8;padding:4px 10px;border-radius:20px;font-size:14px;margin:4px 6px 4px 0;}
 /* 兩欄資訊網格 */
 .grid-two {display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0;}
@@ -39,6 +38,23 @@ h2 {font-size:26px;margin:20px 0;color:#111;}
 .ctrl-row {margin:18px 0;font-size:18px;display:flex;align-items:center;gap:12px;}
 select {padding:6px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:16px;}
 input[type="text"] {padding:6px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:16px;}
+.tag-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 16px 0;
+}
+.tag-wrap * {
+    display: inline-block;
+    background: #e0eaff;
+    color: #1d4ed8;
+    padding: 4px 12px;
+    border-radius: 24px;
+    font-size: 14px;
+    border: none !important;
+    box-shadow: none !important;
+}
+
 </style>
 </head>
 <body>
