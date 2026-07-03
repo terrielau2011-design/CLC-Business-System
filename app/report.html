@@ -98,6 +98,158 @@ input[type="text"] {padding:6px 10px;border:1px solid #d1d5db;border-radius:4px;
     padding: 0;
     margin: 10px 0 0 0;
 }
+/* 頂部篩選標籤區域 */
+#tagContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+.tag-label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 12px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    cursor: pointer;
+    min-width: 160px;
+}
+.tag-label input {
+    margin-right: 6px;
+}
+.tag-rule {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+}
+
+/* 產品卡片容器 */
+#productContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 20px;
+}
+/* 單個產品卡片主體 */
+.product-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+/* 卡片頭部：產品名+融資標籤 */
+.card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+.prod-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111;
+    margin-bottom: 4px;
+}
+.prod-meta {
+    font-size: 13px;
+    color: #666;
+}
+/* 保費融資標籤 */
+.finance-tag {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+    background: #dcfce7;
+    color: #15803d;
+}
+.finance-tag.no {
+    background: #f3f4f6;
+    color: #666;
+}
+
+/* 四項數據指標區域 */
+.metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+.metric {
+    text-align: center;
+    padding: 8px 4px;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+.metric-label {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+.metric-value {
+    font-size: 16px;
+    font-weight: 500;
+    color: #1d4ed8;
+}
+.metric-value.tbd {
+    color: #999;
+}
+
+/* 產品底部標籤chip（同舊系統badge風格統一） */
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.tag-chip {
+    display: inline-block;
+    background: #e0eaff;
+    color: #1d4ed8;
+    padding: 4px 12px;
+    border-radius: 24px;
+    font-size: 13px;
+}
+
+/* 產品特色文字 */
+.feature-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+}
+/* 賣點+場景描述 */
+.influencer-block {
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+.point {
+    font-weight: 500;
+    color: #1d4ed8;
+    margin-bottom: 6px;
+}
+.scene {
+    font-size: 14px;
+    color: #444;
+    line-height: 1.5;
+}
+
+/* 無結果提示 */
+.no-result {
+    padding: 40px;
+    text-align: center;
+    font-size: 16px;
+    color: #666;
+}
+/* 統計文字 */
+#resultHeader {
+    font-size: 20px;
+    margin: 16px 0 8px;
+}
+.stat-row {
+    margin-bottom: 20px;
+    color: #555;
+}
 
 </style>
 
