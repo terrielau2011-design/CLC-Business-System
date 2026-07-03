@@ -54,6 +54,27 @@ input[type="text"] {padding:6px 10px;border:1px solid #d1d5db;border-radius:4px;
     border: none !important;
     box-shadow: none !important;
 }
+/* 每款產品獨立卡片分開排版 */
+#productWrap > div {
+    background:#fff;
+    border-radius:10px;
+    box-shadow:0 1px 8px rgba(0,0,0,0.05);
+    padding:20px;
+    margin-bottom:20px;
+}
+/* 產品資訊兩欄整齊對齊 */
+#productWrap p {
+    display:grid;
+    grid-template-columns:140px 1fr;
+    gap:8px;
+    margin:6px 0;
+}
+#productWrap p:first-child {
+    font-size:20px;
+    font-weight:bold;
+    grid-template-columns:1fr;
+    margin-bottom:12px;
+}
 
 </style>
 </head>
