@@ -245,6 +245,110 @@ input[type="text"] {padding:6px 10px;border:1px solid #d1d5db;border-radius:4px;
     margin-bottom: 20px;
     color: #555;
 }
+/* ====== 1. 頂部篩選標籤區（舊系統勾選卡片風格）====== */
+#tagListWrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 16px 0;
+}
+#tagListWrap span {
+    display: inline-block;
+    background: #e0eaff;
+    color: #1d4ed8;
+    padding: 5px 14px;
+    border-radius: 24px;
+    font-size: 14px;
+    border: none !important;
+}
+
+/* ====== 2. 產品雙欄網格布局（舊系統左右並排）====== */
+#productWrap {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(430px, 1fr));
+    gap: 22px;
+    margin-top: 20px;
+}
+/* 單個產品卡片完全復刻舊系統 */
+#productWrap > div {
+    background:#fff;
+    border-radius:12px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.06);
+    padding:22px;
+    margin-bottom:0;
+}
+/* 產品標題放大加粗 */
+#productWrap p:first-child {
+    font-size:20px;
+    font-weight:700;
+    grid-template-columns:1fr;
+    margin-bottom:14px;
+    color:#111;
+}
+/* 產品資訊兩欄對齊舊系統格式 */
+#productWrap p {
+    display:grid;
+    grid-template-columns:145px 1fr;
+    gap:8px;
+    margin:7px 0;
+    font-size:15px;
+}
+#productWrap p span:first-child {
+    color:#555;
+    font-weight:500;
+}
+
+/* ====== 3. IRR/回本週年 數據小方塊（舊系統淺灰底）====== */
+.metric-row {
+    display: flex;
+    gap: 10px;
+    margin: 12px 0;
+}
+.metric-box {
+    flex: 1;
+    background: #f8fafc;
+    padding: 10px 6px;
+    border-radius: 8px;
+    text-align: center;
+}
+.metric-label {
+    font-size:12px;
+    color:#64748b;
+    margin-bottom:4px;
+}
+.metric-value {
+    font-size:16px;
+    color:#1d4ed8;
+    font-weight:500;
+}
+
+/* ====== 4. 產品底部標籤統一圓角藍色，同頂部一致 ====== */
+#productWrap p:last-of-type {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top:14px;
+    grid-template-columns:1fr;
+}
+#productWrap p:last-of-type span {
+    display: inline-block;
+    background: #e0eaff;
+    color: #1d4ed8;
+    padding:4px 12px;
+    border-radius:24px;
+    font-size:13px;
+}
+
+/* ====== 5. 操作按鈕樣式復刻舊系統 ====== */
+.link-text {
+    color:#1d4ed8;
+    text-decoration: none;
+    margin-right:12px;
+    font-size:14px;
+}
+.link-text:hover {
+    text-decoration: underline;
+}
 
 </style>
 
