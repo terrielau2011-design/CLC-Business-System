@@ -354,8 +354,34 @@ input[type="text"] {padding:6px 10px;border:1px solid #d1d5db;border-radius:4px;
 .link-text:hover {
     text-decoration: underline;
 }
+/* 產品內資訊兩欄強制對齊，避免文字換行 */
+#productWrap p:not(:first-child) {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 6px;
+    margin: 8px 0;
+}
+#productWrap p:not(:first-child) span:first-of-type {
+    color: #555;
+    font-weight: 500;
+    white-space: nowrap;
+}
 
-</style>
+/* 產品底部分類自動拆分成獨立badge */
+#productWrap p:last-of-type {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+    grid-template-columns: 1fr !important;
+}
+#productWrap p:last-of-type span {
+    background: #e0eaff;
+    color: #1d4ed8;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+}
 
 </style>
 </head>
